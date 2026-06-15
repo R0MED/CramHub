@@ -1,10 +1,15 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime
 from datetime import timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
 
-SECRET_KEY = "CHANGE_ME"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 ALGORITHM = "HS256"
 
