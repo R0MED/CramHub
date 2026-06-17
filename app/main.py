@@ -7,6 +7,10 @@ from app.models.models import Base
 from app.api.auth import router as auth_router
 from app.api.collections import (router as collections_router)
 from app.api.cards import router as cards_router
+from app.schemas.auth import UserResponse
+from app.schemas.auth import UserUpdate
+from app.db.database import get_db
+from sqlalchemy.orm import Session
 
 
 Base.metadata.create_all(bind=engine)
@@ -22,6 +26,24 @@ def root():
     return {"status": "ok"}
 
 
-@app.get("/me")
+@app.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):
-    return {"id": current_user.id, "email": current_user.email, "username": current_user.username}
+    return current_user
+
+
+@app.put("/me", response_model=UserResponse)
+def update_me(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user_data.username is not None:
+        current_user.username = user_data.username
+
+    if user_data.email is not None:
+        current_user.email = user_data.email
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
