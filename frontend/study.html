@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Обучение – CramHub</title>
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/study.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="index.html" class="logo">CramHub</a>
+        <div class="topbar-right">
+          <span id="user-info" class="user-info"></span>
+          <button id="logout-btn" class="btn btn-ghost">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container study-container">
+      <a id="back-link" href="#" class="back-link">← К карточкам</a>
+
+      <div id="error" class="error-banner"></div>
+
+      <div id="study-area">
+        <div id="progress" class="study-progress"></div>
+
+        <div id="flashcard" class="flashcard">
+          <div class="flashcard-inner">
+            <div class="flashcard-face flashcard-front">
+              <span class="flashcard-label">Вопрос</span>
+              <p id="card-front"></p>
+            </div>
+            <div class="flashcard-face flashcard-back">
+              <span class="flashcard-label">Ответ</span>
+              <p id="card-back"></p>
+            </div>
+          </div>
+        </div>
+
+        <p class="study-hint">
+          Нажмите на карточку или пробел, чтобы перевернуть. Стрелки ← → –
+          листать.
+        </p>
+
+        <div class="study-controls">
+          <button id="prev-btn" class="btn btn-ghost">← Назад</button>
+          <button id="flip-btn" class="btn btn-primary">Перевернуть</button>
+          <button id="next-btn" class="btn btn-ghost">Вперёд →</button>
+        </div>
+      </div>
+
+      <div id="empty-state" class="empty-state" style="display: none">
+        <p class="muted">В этой коллекции нет карточек для изучения.</p>
+      </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/study.js"></script>
+  </body>
+</html>
