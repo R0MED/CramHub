@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вход – CramHub</title>
+    <link rel="stylesheet" href="css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-card">
+      <h1 class="auth-title">CramHub</h1>
+      <p class="auth-subtitle">Вход в аккаунт</p>
+
+      <div id="error" class="auth-error"></div>
+
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+          required
+        />
+
+        <label for="password">Пароль</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+
+        <button type="submit" class="auth-btn">Войти</button>
+      </form>
+
+      <p class="auth-switch">
+        Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+      </p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+  </body>
+</html>

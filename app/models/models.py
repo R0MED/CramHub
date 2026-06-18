@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text, Float, Date
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, date
 from app.db.database import Base
 
 class User(Base):
@@ -13,6 +13,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     collections = relationship("Collection", back_populates="owner")
+    review_logs = relationship("ReviewLog", back_populates="user", cascade="all, delete-orphan") # Связь с журналом
 
 class Collection(Base):
     __tablename__ = "collections"
@@ -33,6 +34,27 @@ class Card(Base):
     front = Column(Text, nullable=False)
     back = Column(Text, nullable=False)
     difficulty = Column(Integer, default=1)
+    
+    interval = Column(Integer, default=0)
+    repetition = Column(Integer, default=0)
+    easiness_factor = Column(Float, default=2.5)
+    next_review_date = Column(DateTime, default=datetime.utcnow)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
 
     collection = relationship("Collection", back_populates="cards")
+    review_logs = relationship("ReviewLog", back_populates="card", cascade="all, delete-orphan") # Связь с журналом
+
+# ТАБЛИЦА ДЛЯ СТАТИСТИКИ 
+class ReviewLog(Base):
+    __tablename__ = "review_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    card_id = Column(Integer, ForeignKey("cards.id"))
+    quality = Column(Integer, nullable=False) # Оценка от 0 до 5
+    review_date = Column(Date, default=date.today) # Только дата, для группировки по дням
+    review_time = Column(DateTime, default=datetime.utcnow) # Точное время
+    time_spent_ms = Column(Integer, default=0) # Сколько миллисекунд думал над карточкой
+
+    user = relationship("User", back_populates="review_logs")
+    card = relationship("Card", back_populates="review_logs")

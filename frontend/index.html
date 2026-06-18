@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мои коллекции – CramHub</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <h1 class="logo">CramHub</h1>
+        <div class="topbar-right">
+          <span id="user-info" class="user-info"></span>
+          <button id="logout-btn" class="btn btn-ghost">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="page-head">
+        <h2 class="page-title">Мои коллекции</h2>
+        <button id="new-collection-btn" class="btn btn-primary">
+          + Новая коллекция
+        </button>
+      </div>
+
+      <div id="error" class="error-banner"></div>
+
+      <div id="collections" class="collections-grid">
+        <p class="muted">Загрузка…</p>
+      </div>
+    </main>
+
+    <div id="modal" class="modal-overlay">
+      <div class="modal">
+        <h3 class="modal-title">Новая коллекция</h3>
+        <div id="modal-error" class="error-banner"></div>
+        <label for="collection-title">Название</label>
+        <input
+          type="text"
+          id="collection-title"
+          placeholder="Например: Английские слова"
+        />
+        <label for="collection-description">Описание (необязательно)</label>
+        <textarea
+          id="collection-description"
+          rows="3"
+          placeholder="Короткое описание"
+        ></textarea>
+        <div class="modal-actions">
+          <button id="modal-cancel" class="btn btn-ghost">Отмена</button>
+          <button id="modal-save" class="btn btn-primary">Создать</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/collections.js"></script>
+  </body>
+</html>

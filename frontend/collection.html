@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Коллекция – CramHub</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="index.html" class="logo">CramHub</a>
+        <div class="topbar-right">
+          <span id="user-info" class="user-info"></span>
+          <button id="logout-btn" class="btn btn-ghost">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <a href="index.html" class="back-link">← К коллекциям</a>
+
+      <div class="page-head">
+        <h2 id="collection-title" class="page-title">Загрузка…</h2>
+        <div class="head-actions">
+          <a id="study-link" class="btn btn-ghost" href="#">Учить</a>
+          <button id="new-card-btn" class="btn btn-primary">+ Карточка</button>
+        </div>
+      </div>
+
+      <div id="error" class="error-banner"></div>
+
+      <div id="cards" class="cards-list">
+        <p class="muted">Загрузка…</p>
+      </div>
+    </main>
+
+    <div id="modal" class="modal-overlay">
+      <div class="modal">
+        <h3 id="modal-title" class="modal-title">Новая карточка</h3>
+        <div id="modal-error" class="error-banner"></div>
+        <label for="card-front">Вопрос (лицевая сторона)</label>
+        <textarea
+          id="card-front"
+          rows="2"
+          placeholder="Например: apple"
+        ></textarea>
+        <label for="card-back">Ответ (обратная сторона)</label>
+        <textarea
+          id="card-back"
+          rows="2"
+          placeholder="Например: яблоко"
+        ></textarea>
+        <label for="card-difficulty">Сложность (1–5)</label>
+        <input type="number" id="card-difficulty" min="1" max="5" value="1" />
+        <div class="modal-actions">
+          <button id="modal-cancel" class="btn btn-ghost">Отмена</button>
+          <button id="modal-save" class="btn btn-primary">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/cards.js"></script>
+  </body>
+</html>
