@@ -1,8 +1,7 @@
 from fastapi import Depends
 from app.models.models import User
 from app.core.dependencies import get_current_user
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
 from app.db.database import engine
 from app.models.models import Base
 from app.api.auth import router as auth_router
@@ -12,27 +11,11 @@ from app.schemas.auth import UserResponse
 from app.schemas.auth import UserUpdate
 from app.db.database import get_db
 from sqlalchemy.orm import Session
-
+from sqlalchemy import text
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CramHub")
-
-origins = [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 app.include_router(auth_router)
 app.include_router(collections_router)
 app.include_router(cards_router)
@@ -54,16 +37,42 @@ def update_me(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user_data.username is not None and user_data.username != current_user.username:
-        if db.query(User).filter(User.username == user_data.username).first():
-            raise HTTPException(status_code=400, detail="Username already exists")
+    if user_data.username is not None:
         current_user.username = user_data.username
 
-    if user_data.email is not None and user_data.email != current_user.email:
-        if db.query(User).filter(User.email == user_data.email).first():
-            raise HTTPException(status_code=400, detail="Email already exists")
+    if user_data.email is not None:
         current_user.email = user_data.email
 
     db.commit()
     db.refresh(current_user)
+
     return current_user
+    
+
+# ==========================================
+# ВРЕМЕННЫЙ ЭНДПОИНТ ДЛЯ ОБНОВЛЕНИЯ БАЗЫ
+# ==========================================
+@app.get("/update-db")
+def update_database():
+    # 1. Интервальное повторение
+    queries = [
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS interval INTEGER DEFAULT 0;",
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS repetition INTEGER DEFAULT 0;",
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS easiness_factor FLOAT DEFAULT 2.5;",
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS next_review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+    ]
+    with engine.connect() as conn:
+        for query in queries:
+            try:
+                conn.execute(text(query))
+                conn.commit()
+            except Exception as e:
+                print(f"Уже добавлено или ошибка: {e}")
+                
+    # 2. Добавил команду для создания новой таблицы (Статистика / ReviewLog)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        return {"error": f"Произошла ошибка при создании таблиц: {e}"}
+                
+    return {"message": "База данных успешно обновлена. Старые колонки сохранены, новые таблицы созданы!"}
