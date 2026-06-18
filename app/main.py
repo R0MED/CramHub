@@ -1,11 +1,11 @@
-from fastapi import Depends
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.models.models import User
 from app.core.dependencies import get_current_user
-from fastapi import FastAPI
 from app.db.database import engine
 from app.models.models import Base
 from app.api.auth import router as auth_router
-from app.api.collections import (router as collections_router)
+from app.api.collections import router as collections_router
 from app.api.cards import router as cards_router
 from app.schemas.auth import UserResponse
 from app.schemas.auth import UserUpdate
@@ -16,6 +16,15 @@ from sqlalchemy import text
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CramHub")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешаем запросы с любых адресов
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешаем все методы (GET, POST и т.д.)
+    allow_headers=["*"],  # Разрешаем все заголовки
+)
+
 app.include_router(auth_router)
 app.include_router(collections_router)
 app.include_router(cards_router)
