@@ -40,23 +40,36 @@
         </div>
 
         <p class="study-hint">
-          Нажмите на карточку или пробел, чтобы перевернуть. Стрелки ← → –
-          листать.
+          Нажмите на карточку или пробел, чтобы перевернуть.
         </p>
 
-        <div class="study-controls">
-          <button id="prev-btn" class="btn btn-ghost">← Назад</button>
-          <button id="flip-btn" class="btn btn-primary">Перевернуть</button>
-          <button id="next-btn" class="btn btn-ghost">Вперёд →</button>
+        <!-- Стандартные кнопки (до переворота) -->
+        <div class="study-controls" id="basic-controls">
+          <button id="flip-btn" class="btn btn-primary">Показать ответ</button>
+        </div>
+
+        <!-- НОВЫЙ БЛОК: Кнопки оценки SM-2 (появляются после переворота) -->
+        <div class="study-controls" id="sm2-controls" style="display: none; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 15px;">
+          <p style="width: 100%; text-align: center; margin-bottom: 5px; color: #666; font-size: 0.9rem;">Насколько хорошо вы помните это?</p>
+          <button class="btn rate-btn" data-quality="0" style="background-color: #ffebee; color: #c62828; border-color: #ffcdd2;">Забыл (0)</button>
+          <button class="btn rate-btn" data-quality="1" style="background-color: #fff3e0; color: #ef6c00; border-color: #ffe0b2;">Трудно (1)</button>
+          <button class="btn rate-btn" data-quality="2" style="background-color: #fff8e1; color: #f9a825; border-color: #ffecb3;">Сложно (2)</button>
+          <button class="btn rate-btn" data-quality="3" style="background-color: #e3f2fd; color: #1565c0; border-color: #bbdefb;">Норм (3)</button>
+          <button class="btn rate-btn" data-quality="4" style="background-color: #e8f5e9; color: #2e7d32; border-color: #c8e6c9;">Легко (4)</button>
+          <button class="btn rate-btn" data-quality="5" style="background-color: #e0f2f1; color: #00695c; border-color: #b2dfdb;">Идеал (5)</button>
         </div>
       </div>
 
+      <!-- Экран завершения -->
       <div id="empty-state" class="empty-state" style="display: none">
-        <p class="muted">В этой коллекции нет карточек для изучения.</p>
+        <h2>🎉 Отличная работа!</h2>
+        <p class="muted mt-2">На сегодня карточек для повторения в этой коллекции больше нет.</p>
+        <br>
+        <a href="index.html" class="btn btn-primary">Вернуться на главную</a>
       </div>
     </main>
 
-    <script src="js/api.js"></script>
-    <script src="js/study.js"></script>
+    <script src="js/api.js?v=777"></script>
+    <script src="js/study.js?v=777"></script>
   </body>
 </html>

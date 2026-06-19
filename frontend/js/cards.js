@@ -2,8 +2,9 @@ if (!api.isAuthenticated()) {
   window.location.href = "login.html"
 }
 
-const params = new URLSearchParams(window.location.search)
-const collectionId = params.get("id")
+const params = new URLSearchParams(window.location.search);
+const rawCollectionId = params.get("id"); // Получаем строку вида "4:1"
+const collectionId = rawCollectionId ? rawCollectionId.split(':')[0] : null; // Отрезаем всё после ":"
 if (!collectionId) {
   window.location.href = "index.html"
 }

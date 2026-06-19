@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000"
+const API_BASE = "http://201.51.28.93:8000"
 const TOKEN_KEY = "cramhub_token"
 
 const api = {
@@ -80,17 +80,25 @@ const api = {
     return this.request("/me", { auth: true })
   },
 
-  getCollections() {
-    return this.request("/collections", { auth: true })
+  // Обновлено: добавлен поиск
+  getCollections(search = "") {
+    const query = search ? `?search=${encodeURIComponent(search)}` : "";
+    return this.request(`/collections${query}`, { auth: true })
+  },
+  // Новое: получение публичных коллекций
+  getPublicCollections(search = "") {
+    const query = search ? `?search=${encodeURIComponent(search)}` : "";
+    return this.request(`/collections/public${query}`, { auth: true })
   },
   getCollection(id) {
     return this.request(`/collections/${id}`, { auth: true })
   },
-  createCollection(title, description) {
+  // Обновлено: добавлено поле is_public
+  createCollection(title, description, is_public = false) {
     return this.request("/collections", {
       method: "POST",
       auth: true,
-      body: { title, description },
+      body: { title, description, is_public },
     })
   },
   updateCollection(id, data) {

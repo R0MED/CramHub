@@ -19,10 +19,10 @@ app = FastAPI(title="CramHub")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Разрешаем запросы с любых адресов
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Разрешаем все методы (GET, POST и т.д.)
-    allow_headers=["*"],  # Разрешаем все заголовки
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router)
@@ -58,17 +58,14 @@ def update_me(
     return current_user
     
 
-# ==========================================
-# ВРЕМЕННЫЙ ЭНДПОИНТ ДЛЯ ОБНОВЛЕНИЯ БАЗЫ
-# ==========================================
 @app.get("/update-db")
 def update_database():
-    # 1. Интервальное повторение
     queries = [
         "ALTER TABLE cards ADD COLUMN IF NOT EXISTS interval INTEGER DEFAULT 0;",
         "ALTER TABLE cards ADD COLUMN IF NOT EXISTS repetition INTEGER DEFAULT 0;",
         "ALTER TABLE cards ADD COLUMN IF NOT EXISTS easiness_factor FLOAT DEFAULT 2.5;",
-        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS next_review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS next_review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP;",
+        "ALTER TABLE cards ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;" # <-- Добавили новую колонку
     ]
     with engine.connect() as conn:
         for query in queries:
@@ -78,10 +75,9 @@ def update_database():
             except Exception as e:
                 print(f"Уже добавлено или ошибка: {e}")
                 
-    # 2. Добавил команду для создания новой таблицы (Статистика / ReviewLog)
     try:
         Base.metadata.create_all(bind=engine)
     except Exception as e:
         return {"error": f"Произошла ошибка при создании таблиц: {e}"}
                 
-    return {"message": "База данных успешно обновлена. Старые колонки сохранены, новые таблицы созданы!"}
+    return {"message": "База данных успешно обновлена (Добавлено мягкое удаление)!"}
