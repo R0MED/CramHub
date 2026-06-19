@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Мои коллекции – CramHub</title>
+    <title>Коллекции – CramHub</title>
     <link rel="stylesheet" href="css/main.css" />
   </head>
   <body>
@@ -12,6 +12,7 @@
         <h1 class="logo">CramHub</h1>
         <div class="topbar-right">
           <span id="user-info" class="user-info"></span>
+          <a href="statistics.html" class="btn btn-ghost" style="margin-right: 10px;">Статистика</a>
           <button id="logout-btn" class="btn btn-ghost">Выйти</button>
         </div>
       </div>
@@ -25,6 +26,18 @@
         </button>
       </div>
 
+      <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 5px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+          <button id="tab-my" class="btn btn-primary" style="margin: 0;">Мои наборы</button>
+          <button id="tab-public" class="btn btn-ghost" style="margin: 0; color: #475569;">Публичные</button>
+        </div>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="🔍 Поиск по названию или описанию..."
+          style="flex-grow: 1; padding: 10px 15px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 14px;"
+        />
+      </div>
       <div id="error" class="error-banner"></div>
 
       <div id="collections" class="collections-grid">
@@ -48,7 +61,12 @@
           rows="3"
           placeholder="Короткое описание"
         ></textarea>
-        <div class="modal-actions">
+        
+        <label style="display: flex; align-items: center; gap: 10px; margin-top: 15px; cursor: pointer; font-weight: normal;">
+          <input type="checkbox" id="collection-public" style="width: 16px; height: 16px;" />
+          <span style="color: #475569;">Сделать доступной для всех (Публичная)</span>
+        </label>
+        <div class="modal-actions" style="margin-top: 20px;">
           <button id="modal-cancel" class="btn btn-ghost">Отмена</button>
           <button id="modal-save" class="btn btn-primary">Создать</button>
         </div>

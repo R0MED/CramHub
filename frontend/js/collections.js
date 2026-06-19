@@ -6,6 +6,11 @@ const collectionsEl = document.getElementById("collections")
 const errorEl = document.getElementById("error")
 const modal = document.getElementById("modal")
 
+// Новые переменные для поиска и вкладок
+let currentTab = "my"; // "my" или "public"
+let searchQuery = "";
+let searchTimeout = null;
+
 function showError(el, message) {
   el.textContent = message
   el.style.display = "block"
@@ -39,10 +44,51 @@ document.getElementById("logout-btn").addEventListener("click", () => {
   window.location.href = "login.html"
 })
 
+// ЛОГИКА ВКЛАДОК И ПОИСКА 
+const tabMy = document.getElementById("tab-my");
+const tabPublic = document.getElementById("tab-public");
+const searchInput = document.getElementById("search-input");
+const newColBtn = document.getElementById("new-collection-btn");
+
+tabMy.addEventListener("click", () => {
+  currentTab = "my";
+  tabMy.className = "btn btn-primary";
+  tabPublic.className = "btn btn-ghost";
+  tabPublic.style.color = "#475569";
+  newColBtn.style.display = "block"; // Показываем кнопку создания
+  loadCollections();
+});
+
+tabPublic.addEventListener("click", () => {
+  currentTab = "public";
+  tabPublic.className = "btn btn-primary";
+  tabPublic.style.color = "";
+  tabMy.className = "btn btn-ghost";
+  tabMy.style.color = "#475569";
+  newColBtn.style.display = "none"; // Прячем кнопку создания
+  loadCollections();
+});
+
+searchInput.addEventListener("input", (e) => {
+  searchQuery = e.target.value.trim();
+  // Ждем 400мс после ввода, чтобы не спамить сервер запросами 
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadCollections();
+  }, 400);
+});
+// ===============================
+
 async function loadCollections() {
   clearError(errorEl)
+  collectionsEl.innerHTML = '<p class="muted">Загрузка…</p>';
   try {
-    const collections = await api.getCollections()
+    let collections = [];
+    if (currentTab === "my") {
+      collections = await api.getCollections(searchQuery);
+    } else {
+      collections = await api.getPublicCollections(searchQuery);
+    }
     renderCollections(collections)
   } catch (err) {
     showError(errorEl, err.message)
@@ -51,8 +97,13 @@ async function loadCollections() {
 
 function renderCollections(collections) {
   if (!collections.length) {
-    collectionsEl.innerHTML =
-      '<p class="muted">Пока нет коллекций. Создайте первую!</p>'
+    if (searchQuery) {
+        collectionsEl.innerHTML = '<p class="muted">По вашему запросу ничего не найдено.</p>'
+    } else {
+        collectionsEl.innerHTML = currentTab === "my" 
+            ? '<p class="muted">Пока нет коллекций. Создайте первую!</p>'
+            : '<p class="muted">В публичной базе пока пусто.</p>';
+    }
     return
   }
 
@@ -77,9 +128,9 @@ function renderCollections(collections) {
           <a class="btn btn-small btn-primary" href="collection.html?id=${
             c.id
           }">Открыть</a>
-          <button class="btn btn-small btn-danger" data-delete="${
-            c.id
-          }">Удалить</button>
+          
+          <!-- Кнопка удаления доступна только в "Моих наборах" -->
+          ${currentTab === "my" ? `<button class="btn btn-small btn-danger" data-delete="${c.id}">Удалить</button>` : ''}
         </div>
       </div>`
     )
@@ -103,11 +154,13 @@ async function handleDelete(id) {
 const modalError = document.getElementById("modal-error")
 const titleInput = document.getElementById("collection-title")
 const descInput = document.getElementById("collection-description")
+const publicCheckbox = document.getElementById("collection-public")
 
 function openModal() {
   clearError(modalError)
   titleInput.value = ""
   descInput.value = ""
+  publicCheckbox.checked = false // Сбрасываем галочку
   modal.classList.add("open")
   titleInput.focus()
 }
@@ -127,12 +180,14 @@ document.getElementById("modal-save").addEventListener("click", async () => {
   clearError(modalError)
   const title = titleInput.value.trim()
   const description = descInput.value.trim()
+  const isPublic = publicCheckbox.checked // Читаем статус галочки
+
   if (!title) {
     showError(modalError, "Введите название")
     return
   }
   try {
-    await api.createCollection(title, description || null)
+    await api.createCollection(title, description || null, isPublic)
     closeModal()
     loadCollections()
   } catch (err) {

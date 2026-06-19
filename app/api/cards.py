@@ -25,11 +25,11 @@ def get_cards(collection_id: int, db: Session = Depends(get_db), current_user=De
     collection = (db.query(Collection).filter(Collection.id == collection_id, Collection.user_id == current_user.id).first())
     if not collection:
         raise HTTPException(status_code=404, detail="Collection not found")
-    return db.query(Card).filter(Card.collection_id == collection_id).all()
+    return db.query(Card).filter(Card.collection_id == collection_id, Card.is_deleted == False).all()
 
 @router.put("/{card_id}", response_model=CardResponse)
 def update_card(card_id: int, card_data: CardUpdate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    card = (db.query(Card).join(Collection).filter(Card.id == card_id, Collection.user_id == current_user.id).first())
+    card = (db.query(Card).join(Collection).filter(Card.id == card_id, Collection.user_id == current_user.id, Card.is_deleted == False).first())
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
     if card_data.front is not None:
@@ -47,12 +47,12 @@ def delete_card(card_id: int, db: Session = Depends(get_db), current_user=Depend
     card = (db.query(Card).join(Collection).filter(Card.id == card_id,Collection.user_id == current_user.id).first())
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
-    db.delete(card)
+    
+    card.is_deleted = True
     db.commit()
     return {"message": "Card deleted successfully"}
 
 
-# ЭНДПОИНТЫ ДЛЯ ИНТЕРВАЛЬНОГО ПОВТОРЕНИЯ
 
 @router.get("/review/{collection_id}", response_model=list[CardResponse])
 def get_cards_for_review(collection_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -61,12 +61,12 @@ def get_cards_for_review(collection_id: int, db: Session = Depends(get_db), curr
         raise HTTPException(status_code=404, detail="Collection not found")
     
     now = datetime.utcnow()
-    cards = db.query(Card).filter(Card.collection_id == collection_id, Card.next_review_date <= now).all()
+    cards = db.query(Card).filter(Card.collection_id == collection_id, Card.next_review_date <= now, Card.is_deleted == False).all()
     return cards
 
 @router.post("/{card_id}/review", response_model=CardResponse)
 def review_card(card_id: int, review: CardReview, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    card = db.query(Card).join(Collection).filter(Card.id == card_id, Collection.user_id == current_user.id).first()
+    card = db.query(Card).join(Collection).filter(Card.id == card_id, Collection.user_id == current_user.id, Card.is_deleted == False).first()
     if not card:
         raise HTTPException(status_code=404, detail="Card not found")
     
@@ -74,7 +74,6 @@ def review_card(card_id: int, review: CardReview, db: Session = Depends(get_db),
     if quality < 0 or quality > 5:
         raise HTTPException(status_code=400, detail="Оценка должна быть от 0 до 5")
     
-    # Запись в журнал (СТАТИСТИКА)
     new_log = ReviewLog(
         user_id=current_user.id,
         card_id=card.id,
@@ -83,7 +82,6 @@ def review_card(card_id: int, review: CardReview, db: Session = Depends(get_db),
     )
     db.add(new_log)
 
-    # SM-2 Алгоритм
     if quality >= 3:
         if card.repetition == 0:
             card.interval = 1
@@ -111,9 +109,6 @@ def review_card(card_id: int, review: CardReview, db: Session = Depends(get_db),
 
 @router.get("/statistics/summary")
 def get_statistics_summary(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Получить общую статистику пользователя (кол-во ответов, процент правильных, среднее время)"""
-    
-    # Все логи текущего пользователя
     logs_query = db.query(ReviewLog).filter(ReviewLog.user_id == current_user.id)
     total_reviews = logs_query.count()
     
@@ -124,11 +119,9 @@ def get_statistics_summary(db: Session = Depends(get_db), current_user=Depends(g
             "average_time_spent_sec": 0.0
         }
     
-    # Правильными считаем оценки 3, 4 и 5
     correct_reviews = logs_query.filter(ReviewLog.quality >= 3).count()
     correct_rate = round((correct_reviews / total_reviews) * 100, 1)
     
-    # Среднее время ответа (переводим мс в секунды)
     avg_time_ms = db.query(func.avg(ReviewLog.time_spent_ms)).filter(ReviewLog.user_id == current_user.id).scalar() or 0
     avg_time_sec = round(avg_time_ms / 1000, 2)
     
@@ -140,8 +133,6 @@ def get_statistics_summary(db: Session = Depends(get_db), current_user=Depends(g
 
 @router.get("/statistics/activity", response_model=list[DailyActivityResponse])
 def get_daily_activity(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    """Получить активность по дням (как в GitHub) для построения графика"""
-    
     activity = (
         db.query(
             ReviewLog.review_date,
@@ -150,10 +141,9 @@ def get_daily_activity(db: Session = Depends(get_db), current_user=Depends(get_c
         .filter(ReviewLog.user_id == current_user.id)
         .group_by(ReviewLog.review_date)
         .order_by(ReviewLog.review_date.desc())
-        .limit(30) # Берем последние 30 дней
+        .limit(30)
         .all()
     )
     
-    # Форматируем результат в виде списка словарей
     result = [{"review_date": item.review_date, "cards_reviewed": item.cards_reviewed} for item in activity]
     return result
